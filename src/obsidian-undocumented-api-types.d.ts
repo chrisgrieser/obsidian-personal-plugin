@@ -14,7 +14,7 @@ declare module "obsidian" {
 	interface Vault {
 		getConfig: (key: string) => string | boolean;
 	}
-	interface WorkspaceSidedock {
-		setSize: (size: number) => void;
+	interface WorkspaceLeaf {
+		id: string;
 	}
 }

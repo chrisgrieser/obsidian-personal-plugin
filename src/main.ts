@@ -89,6 +89,7 @@ export default class PseudometaPersonalPlugin extends Plugin {
 			"obsidian-textgenerator-plugin",
 			"commentator",
 			"obsidian-languagetool-plugin",
+			"obsidian-footnotes",
 			// INFO not longform plugin, as its pane position is otherwise not
 			// saved correctly, and since it needs to be loaded to apply the
 			// `longform-leaf` class, which in turn is needed to determine which
