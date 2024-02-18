@@ -8,10 +8,16 @@ build:
 
 # assumes `$VAULT_PATH` is set, e.g. in `.zshenv`
 transfer-to-regular-vault:
-	PLUGIN_PATH="$$VAULT_PATH/.obsidian/plugins/my-personal-plugin" && \
-	node esbuild.config.mjs && \
-	cp -f "main.js" "$$PLUGIN_PATH/main.js" && \
-	cp -f "manifest.json" "$$PLUGIN_PATH/manifest.json"
+	vault_name="$$(basename "$$VAULT_PATH")" && \
+	plugin_path="$$VAULT_PATH/.obsidian/plugins/my-personal-plugin" && \
+	node esbuild.config.mjs &>/dev/null && \
+	cp -f "main.js" "$$plugin_path/main.js" && \
+	cp -f "manifest.json" "$$plugin_path/manifest.json" && \
+	echo "Plugin transferred to regular vault." && \
+	if [[ "$$OSTYPE" =~ darwin* ]] ; then \
+		open "obsidian://advanced-uri?vault=$$vault_name&commandid=workspace%253Aclose-window" ; \
+		sleep 0.7 ; open "obsidian://open?vault=$$vault_name" ;\
+	fi
 
 format:
 	npx biome format --write "$$(git rev-parse --show-toplevel)"
