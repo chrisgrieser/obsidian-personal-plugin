@@ -19,3 +19,10 @@ format:
 check:
 	zsh ./.githooks/pre-commit
 
+# assumes `$VAULT_PATH` is set, e.g. in `.zshenv`
+transfer-to-regular-vault:
+	PLUGIN_PATH="$$VAULT_PATH/.obsidian/plugins/my-personal-plugin" && \
+	node esbuild.config.mjs && \
+	cp -f "main.js" "$$PLUGIN_PATH/main.js" && \
+	cp -f "manifest.json" "$$PLUGIN_PATH/manifest.json"
+
