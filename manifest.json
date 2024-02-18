@@ -1,12 +1,12 @@
 {
-	"id": "{{plugin-id}}",
-	"name": "{{plugin-name}}",
-	"description": "{{plugin-desc}}",
+	"id": "personal-plugin",
+	"name": "pseudometa personal plugin",
+	"description": "Personal Obsidian plugin, containing features customized to my workflow.",
 	"version": "0.1.0",
 	"minAppVersion": "1.0",
 	"isDesktopOnly": false,
 	"author": "pseudometa",
 	"fundingUrl": "https://ko-fi.com/pseudometa",
 	"authorUrl": "https://chris-grieser.de/",
-	"helpUrl": "https://github.com/{{plugin-repo}}#readme"
+	"helpUrl": "https://github.com/chrisgrieser/obsidian-personal-plugin#readme"
 }

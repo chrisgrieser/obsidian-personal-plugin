@@ -1,6 +1,6 @@
 import { Plugin } from "obsidian";
 
-export default class {{plugin-class}} extends Plugin {
+export default class PersonalPlugin extends Plugin {
 
 	override onload() {
 		console.info(this.manifest.name + " Plugin loaded.");
