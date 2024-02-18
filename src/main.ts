@@ -12,10 +12,12 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		this.showSpellcheckIndicator();
 
 		// longform or writing actions
-		this.switchWhenWritingOrLongformNote();
 		this.registerEvent(
 			this.app.workspace.on("file-open", () => this.switchWhenWritingOrLongformNote()),
 		);
+		// delay due to longform plugin loading slowly, thus making the check
+		// whether the not is a longform note delay
+		setTimeout(() => this.switchWhenWritingOrLongformNote(), 2000);
 	}
 
 	override onunload() {
@@ -77,6 +79,7 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		else new Notice(`Could not find sidebar pane for "${leafToOpen}".`);
 	}
 
+	// lazy-load writing plugins, since they are only rarely used and also slow to load
 	lazyloadWritingPlugins(isWritingOrLongformNote: boolean) {
 		if (this.lazyloadDone || !isWritingOrLongformNote) return;
 
@@ -86,20 +89,16 @@ export default class PseudometaPersonalPlugin extends Plugin {
 			"obsidian-textgenerator-plugin",
 			"commentator",
 			"obsidian-languagetool-plugin",
-			"obsidian-dynamic-highlights",
-			// not longform plugin, as its pane position is otherwise not saved correctly
+			// INFO not longform plugin, as its pane position is otherwise not
+			// saved correctly, and since it needs to be loaded to apply the
+			// `longform-leaf` class, which in turn is needed to determine which
+			// notes are longform notes
 		];
 
-		// enable them all
 		for (const pluginId of writingPlugins) {
 			this.app.plugins.enablePlugin(pluginId);
 		}
-
-		// notify
-		const pluginList = writingPlugins.map((p) => this.app.plugins.manifests[p]?.name || p);
-		const msg = "Lazyloading writing plugins:\n- " + pluginList.join("\n- ");
-		new Notice(msg, pluginList.length * 1000);
-
+		new Notice("Writing plugins lazy-loaded.", 1000);
 		this.lazyloadDone = true;
 	}
 }
