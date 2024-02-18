@@ -19,6 +19,3 @@ format:
 check:
 	zsh ./.githooks/pre-commit
 
-release:
-	zsh ./.release.sh
-
