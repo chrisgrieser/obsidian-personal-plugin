@@ -1,4 +1,4 @@
-import { MarkdownView, Notice, Plugin, WorkspaceLeaf, WorkspaceSidedock } from "obsidian";
+import { MarkdownView, Notice, Plugin, WorkspaceLeaf } from "obsidian";
 
 export default class PseudometaPersonalPlugin extends Plugin {
 	statusbar?: HTMLElement;
@@ -9,7 +9,7 @@ export default class PseudometaPersonalPlugin extends Plugin {
 
 		// statusbar initialization
 		this.statusbar = this.addStatusBarItem();
-		this.setSpellcheckStatusbar();
+		this.showSpellcheckIndicator();
 
 		// longform or writing actions
 		this.switchWhenWritingOrLongformNote();
@@ -25,11 +25,9 @@ export default class PseudometaPersonalPlugin extends Plugin {
 	//───────────────────────────────────────────────────────────────────────────
 
 	// display ✓ if spellcheck is ON, nothing if OFF
-	setSpellcheckStatusbar(state?: "ON" | "OFF") {
-		const spellcheckOn = this.app.vault.getConfig("spellcheck");
-		if (!state) state = spellcheckOn ? "ON" : "OFF";
-		const text = state === "ON" ? "✓" : "";
-		this.statusbar?.setText(text);
+	showSpellcheckIndicator(show?: boolean) {
+		if (!show) show = this.app.vault.getConfig("spellcheck") as boolean;
+		this.statusbar?.setText(show ? "✓" : "");
 	}
 
 	switchWhenWritingOrLongformNote() {
@@ -39,12 +37,12 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		const isLongformNote = activeView.containerEl.hasClass("longform-leaf");
 		const fm = this.app.metadataCache.getFileCache(activeView.file)?.frontmatter;
 		const writingCssclass =
-			// biome-ignore lint/complexity/useLiteralKeys: required, as index class
+			// biome-ignore lint/complexity/useLiteralKeys: required, b/c index class
 			fm && (fm["cssclass"] || fm["cssclasses"] || []).includes("writing");
 
 		// ACTIONS
 		this.toggleSpellcheck(isLongformNote || writingCssclass);
-		this.toggleSidebars(isLongformNote);
+		this.toggleTabsInRightSidebar(isLongformNote);
 		this.lazyloadWritingPlugins(isLongformNote || writingCssclass);
 	}
 
@@ -53,34 +51,30 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		const spellcheckOn = this.app.vault.getConfig("spellcheck");
 		if (isWritingOrLongformNote && !spellcheckOn) {
 			this.app.commands.executeCommandById("editor:toggle-spellcheck");
-			new Notice("Spellcheck ON");
-			this.setSpellcheckStatusbar("ON");
+			this.showSpellcheckIndicator(true);
 		} else if (!isWritingOrLongformNote && spellcheckOn) {
 			this.app.commands.executeCommandById("editor:toggle-spellcheck");
-			this.setSpellcheckStatusbar("OFF");
-			new Notice("Spellcheck OFF");
+			this.showSpellcheckIndicator(false);
 		}
 	}
 
-	toggleSidebars(isLongform: boolean) {
+	// open longform sidebars if longform, otherwise open outgoing links
+	toggleTabsInRightSidebar(isLongform: boolean) {
 		if (this.app.isMobile) return;
 
-		// right split preparation
-		const rightSplit = this.app.workspace.rightSplit as WorkspaceSidedock; // cast since not mobile
-		rightSplit.expand();
-		rightSplit.setSize(250);
+		// determine leaves in right sidebar
+		const rightSplit = this.app.workspace.rightSplit;
 		const rightRoot = rightSplit.getRoot();
-
 		const rightSideLeaves: WorkspaceLeaf[] = [];
 		this.app.workspace.iterateAllLeaves((l) => {
 			if (l.getRoot() === rightRoot) rightSideLeaves.push(l);
 		});
-		const searchLeaf = rightSideLeaves.find((l) => l.view instanceof MarkdownView);
-		if (searchLeaf) this.app.workspace.revealLeaf(searchLeaf);
 
-		if (isLongform) {
-		} else {
-		}
+		// open leaf and set size
+		const leafToOpen = isLongform ? "explorerView" : "outgoingLink";
+		const theLeaf = rightSideLeaves.find((l) => Object.keys(l.view).includes(leafToOpen));
+		if (theLeaf) this.app.workspace.revealLeaf(theLeaf);
+		else new Notice(`Could not find sidebar pane for "${leafToOpen}".`);
 	}
 
 	lazyloadWritingPlugins(isWritingOrLongformNote: boolean) {
@@ -88,12 +82,12 @@ export default class PseudometaPersonalPlugin extends Plugin {
 
 		// CONFIG
 		const writingPlugins = [
-			"longform",
 			"nl-syntax-highlighting",
 			"obsidian-textgenerator-plugin",
 			"commentator",
 			"obsidian-languagetool-plugin",
 			"obsidian-dynamic-highlights",
+			// not longform plugin, as its pane position is otherwise not saved correctly
 		];
 
 		// enable them all
