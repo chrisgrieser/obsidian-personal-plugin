@@ -1,4 +1,4 @@
-import { MarkdownView, Plugin, WorkspaceLeaf, WorkspaceSidedock } from "obsidian";
+import { MarkdownView, Notice, Plugin, WorkspaceLeaf, WorkspaceSidedock } from "obsidian";
 
 export default class PseudometaPersonalPlugin extends Plugin {
 	statusbar?: HTMLElement;
@@ -53,10 +53,12 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		const spellcheckOn = this.app.vault.getConfig("spellcheck");
 		if (isWritingOrLongformNote && !spellcheckOn) {
 			this.app.commands.executeCommandById("editor:toggle-spellcheck");
+			new Notice("Spellcheck ON");
 			this.setSpellcheckStatusbar("ON");
 		} else if (!isWritingOrLongformNote && spellcheckOn) {
 			this.app.commands.executeCommandById("editor:toggle-spellcheck");
 			this.setSpellcheckStatusbar("OFF");
+			new Notice("Spellcheck OFF");
 		}
 	}
 
@@ -94,9 +96,16 @@ export default class PseudometaPersonalPlugin extends Plugin {
 			"obsidian-dynamic-highlights",
 		];
 
-		for (const plugin of writingPlugins) {
-			this.app.plugins.enablePlugin(plugin);
+		// enable them all
+		for (const pluginId of writingPlugins) {
+			this.app.plugins.enablePlugin(pluginId);
 		}
+
+		// notify
+		const pluginList = writingPlugins.map((p) => this.app.plugins.manifests[p]?.name || p);
+		const msg = "Lazyloading writing plugins:\n- " + pluginList.join("\n- ");
+		new Notice(msg, pluginList.length * 1000);
+
 		this.lazyloadDone = true;
 	}
 }

@@ -8,6 +8,7 @@ declare module "obsidian" {
 		isMobile: boolean;
 		plugins: {
 			enablePlugin: (pluginId: string) => void;
+			manifests: Record<string, { name: string }>;
 		}
 	}
 	interface Vault {
