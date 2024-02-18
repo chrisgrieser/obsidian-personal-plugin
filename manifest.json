@@ -1,5 +1,5 @@
 {
-	"id": "personal-plugin",
+	"id": "pseudometa-personal-plugin",
 	"name": "pseudometa personal plugin",
 	"description": "Personal Obsidian plugin, containing features customized to my workflow.",
 	"version": "0.1.0",
