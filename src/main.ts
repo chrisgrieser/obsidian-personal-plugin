@@ -1,7 +1,8 @@
-import { MarkdownView, Plugin } from "obsidian";
+import { MarkdownView, Plugin, WorkspaceLeaf, WorkspaceSidedock } from "obsidian";
 
 export default class PseudometaPersonalPlugin extends Plugin {
 	statusbar?: HTMLElement;
+	lazyloadDone = false;
 
 	override onload() {
 		console.info(this.manifest.name + " Plugin loaded.");
@@ -44,6 +45,7 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		// ACTIONS
 		this.toggleSpellcheck(isLongformNote || writingCssclass);
 		this.toggleSidebars(isLongformNote);
+		this.lazyloadWritingPlugins(isLongformNote || writingCssclass);
 	}
 
 	// spellcheck ON if longform/writing, OFF otherwise
@@ -59,8 +61,42 @@ export default class PseudometaPersonalPlugin extends Plugin {
 	}
 
 	toggleSidebars(isLongform: boolean) {
+		if (this.app.isMobile) return;
+
+		// right split preparation
+		const rightSplit = this.app.workspace.rightSplit as WorkspaceSidedock; // cast since not mobile
+		rightSplit.expand();
+		rightSplit.setSize(250);
+		const rightRoot = rightSplit.getRoot();
+
+		const rightSideLeaves: WorkspaceLeaf[] = [];
+		this.app.workspace.iterateAllLeaves((l) => {
+			if (l.getRoot() === rightRoot) rightSideLeaves.push(l);
+		});
+		const searchLeaf = rightSideLeaves.find((l) => l.view instanceof MarkdownView);
+		if (searchLeaf) this.app.workspace.revealLeaf(searchLeaf);
+
 		if (isLongform) {
 		} else {
 		}
+	}
+
+	lazyloadWritingPlugins(isWritingOrLongformNote: boolean) {
+		if (this.lazyloadDone || !isWritingOrLongformNote) return;
+
+		// CONFIG
+		const writingPlugins = [
+			"longform",
+			"nl-syntax-highlighting",
+			"obsidian-textgenerator-plugin",
+			"commentator",
+			"obsidian-languagetool-plugin",
+			"obsidian-dynamic-highlights",
+		];
+
+		for (const plugin of writingPlugins) {
+			this.app.plugins.enablePlugin(plugin);
+		}
+		this.lazyloadDone = true;
 	}
 }
