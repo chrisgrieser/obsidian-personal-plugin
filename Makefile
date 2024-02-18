@@ -7,17 +7,14 @@ build:
 	if [[ "$$OSTYPE" =~ darwin* ]] ; then open "obsidian://open?vault=$$VAULT_NAME" ; fi
 
 # assumes `$VAULT_PATH` is set, e.g. in `.zshenv`
+# and that the advanced URI plugin is installed
 transfer-to-regular-vault:
 	vault_name="$$(basename "$$VAULT_PATH")" && \
 	plugin_path="$$VAULT_PATH/.obsidian/plugins/my-personal-plugin" && \
 	node esbuild.config.mjs &>/dev/null && \
-	cp -f "main.js" "$$plugin_path/main.js" && \
-	cp -f "manifest.json" "$$plugin_path/manifest.json" && \
+	cp -f "main.js" "$$plugin_path" && cp -f "manifest.json" "$$plugin_path" && \
 	echo "Plugin transferred to regular vault." && \
-	if [[ "$$OSTYPE" =~ darwin* ]] ; then \
-		open "obsidian://advanced-uri?vault=$$vault_name&commandid=workspace%253Aclose-window" ; \
-		sleep 0.7 ; open "obsidian://open?vault=$$vault_name" ;\
-	fi
+	if [[ "$$OSTYPE" =~ darwin* ]] ; then open "obsidian://advanced-uri?vault=$$vault_name&commandid=app%253Areload" ; fi
 
 format:
 	npx biome format --write "$$(git rev-parse --show-toplevel)"
