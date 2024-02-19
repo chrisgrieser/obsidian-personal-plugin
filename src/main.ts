@@ -5,12 +5,12 @@ const CONFIG = {
 		isLongform: {
 			leafToOpen: "explorerView", // = longform pane
 			widthPx: 280,
-			heightFactor: [99, 20],
+			flexGrowHeight: [1, 5], // ratio of panes, from top to bottom
 		},
 		notLongform: {
 			leafToOpen: "outgoingLink",
 			widthPx: 250,
-			heightFactor: [8, 20],
+			flexGrowHeight: [3, 2],
 		},
 	},
 	writingPlugins: [
@@ -32,10 +32,12 @@ export default class PseudometaPersonalPlugin extends Plugin {
 	lazyloadDone = false;
 	config?: typeof CONFIG;
 
-	override onload() {
+	override async onload() {
 		console.info(this.manifest.name + " Plugin loaded.");
 
+		// this.config = await this.app.vault.adapter.read("/settings.yml");
 		this.config = CONFIG;
+		// console.log("👽 this.config:", this.config);
 
 		// statusbar initialization
 		this.statusbar = this.addStatusBarItem();
@@ -115,16 +117,13 @@ export default class PseudometaPersonalPlugin extends Plugin {
 
 		// set size
 		const widthPx = conf[isLongform ? "isLongform" : "notLongform"].widthPx;
-		const heightFactor = conf[isLongform ? "isLongform" : "notLongform"].heightFactor;
-
 		rightSplit.setSize(widthPx);
-		const tabGroup = theLeaf.parent as WorkspaceLeaf;
-		tabGroup.setDimension(heightFactor[0] || 50);
 
-		// HACK `setDimension` does not appear to be fully reliable, but when
-		// setting the other tab group's height, it seems to work better…
-		const otherTabGroup = rightSplit.children.find((l) => l.id !== tabGroup.id);
-		otherTabGroup?.setDimension(heightFactor[1] || 50);
+		const flexGrowHeight = conf[isLongform ? "isLongform" : "notLongform"].flexGrowHeight;
+		for (let i = 0; i < rightSplit.children.length; i++) {
+			const tabgroup = rightSplit.children[i];
+			tabgroup?.setDimension(flexGrowHeight[i] || 1);
+		}
 	}
 
 	// lazy-load writing plugins, since they are only rarely used and also slow to load
