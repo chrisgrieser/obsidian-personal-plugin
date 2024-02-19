@@ -8,19 +8,19 @@ import {
 } from "obsidian";
 
 interface PseudometaPersonalPluginSettings {
-	rightSidebar: {
+	rightSidebar?: {
 		isLongform: {
-			leafToOpen: string;
-			widthPx: number;
-			flexGrowHeight: number[];
+			leafToOpen?: string;
+			widthPx?: number;
+			flexGrowHeight?: number[];
 		};
 		notLongform: {
-			leafToOpen: string;
-			widthPx: number;
-			flexGrowHeight: number[];
+			leafToOpen?: string;
+			widthPx?: number;
+			flexGrowHeight?: number[];
 		};
 	};
-	writingPlugins: string[];
+	writingPlugins?: string[];
 }
 
 // CONFIG
@@ -100,7 +100,10 @@ export default class PseudometaPersonalPlugin extends Plugin {
 	toggleTabsInRightSidebar(isLongform: boolean) {
 		if (this.app.isMobile) return;
 		const conf = this.config?.rightSidebar;
-		if (!conf) return;
+		if (!conf) {
+			new Notice("'rightSidebar' not configured.");
+			return;
+		}
 
 		// determine leaves in right sidebar
 		const rightSplit = this.app.workspace.rightSplit as WorkspaceSidedock;
@@ -112,6 +115,10 @@ export default class PseudometaPersonalPlugin extends Plugin {
 
 		// open leaf
 		const leafToOpen = conf[isLongform ? "isLongform" : "notLongform"].leafToOpen;
+		if (!leafToOpen) {
+			new Notice("'leafToOpen' not configured.");
+			return;
+		}
 		const theLeaf = rightSideLeaves.find((l) => Object.keys(l.view).includes(leafToOpen));
 		if (!theLeaf) {
 			new Notice(`Could not find sidebar pane for "${leafToOpen}".`);
@@ -121,9 +128,17 @@ export default class PseudometaPersonalPlugin extends Plugin {
 
 		// set size
 		const widthPx = conf[isLongform ? "isLongform" : "notLongform"].widthPx;
+		if (!widthPx) {
+			new Notice("'widthPx' not configured.");
+			return;
+		}
 		rightSplit.setSize(widthPx);
 
 		const flexGrowHeight = conf[isLongform ? "isLongform" : "notLongform"].flexGrowHeight;
+		if (!flexGrowHeight) {
+			new Notice("'flexGrowHeight' not configured.");
+			return;
+		}
 		for (let i = 0; i < rightSplit.children.length; i++) {
 			const tabgroup = rightSplit.children[i];
 			tabgroup?.setDimension(flexGrowHeight[i] || 1);
@@ -134,7 +149,10 @@ export default class PseudometaPersonalPlugin extends Plugin {
 	lazyloadWritingPlugins(isWritingOrLongformNote: boolean) {
 		if (this.lazyloadDone || !isWritingOrLongformNote) return;
 		const writingPlugins = this.config?.writingPlugins;
-		if (!writingPlugins) return;
+		if (!writingPlugins) {
+			new Notice("'writingPlugins' not configured.");
+			return;
+		}
 
 		for (const pluginId of writingPlugins) {
 			this.app.plugins.enablePlugin(pluginId);
