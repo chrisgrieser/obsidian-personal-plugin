@@ -17,3 +17,34 @@ can reference code snippets from it.
 - When in [longform](https://obsidian.md/plugins?id=longform)
   note, open the longform sidebar pane. Otherwise, open the
   outgoing-links-sidebar. Also sets specific sizes for the panes.
+
+## Settings
+The settings for this plugin are saved as yaml file in the users vault, so they
+are stored independently of this plugin repo (where a `data.json` would be
+stored). The location is hard-coded as `Meta/personal-plugin-settings.yml`.
+
+The yaml file should look like this:
+
+```yml
+rightSidebar:
+  isLongform:
+    leafToOpen: explorerView # = longform pane
+    widthPx: 280
+    flexGrowHeight: [1, 5] # ratio of pane heights, top to bottom (css flex-grow)
+  notLongform:
+    leafToOpen: outgoingLink
+    widthPx: 250
+    flexGrowHeight: [3, 2]
+
+writingPlugins:
+  - nl-syntax-highlighting
+  - obsidian-textgenerator-plugin
+  - commentator
+  - obsidian-languagetool-plugin
+  - better-word-count
+  - obsidian-footnotes
+  # INFO not longform plugin, as its pane position is otherwise not
+  # saved correctly, and since it needs to be loaded to apply the
+  # `longform-leaf` class, which in turn is needed to determine which
+  # notes are longform notes
+```

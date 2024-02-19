@@ -1,43 +1,47 @@
-import { MarkdownView, Notice, Plugin, WorkspaceLeaf, WorkspaceSidedock } from "obsidian";
+import {
+	MarkdownView,
+	Notice,
+	Plugin,
+	WorkspaceLeaf,
+	WorkspaceSidedock,
+	parseYaml,
+} from "obsidian";
 
-const CONFIG = {
+interface PseudometaPersonalPluginSettings {
 	rightSidebar: {
 		isLongform: {
-			leafToOpen: "explorerView", // = longform pane
-			widthPx: 280,
-			flexGrowHeight: [1, 5], // ratio of panes, from top to bottom
-		},
+			leafToOpen: string;
+			widthPx: number;
+			flexGrowHeight: number[];
+		};
 		notLongform: {
-			leafToOpen: "outgoingLink",
-			widthPx: 250,
-			flexGrowHeight: [3, 2],
-		},
-	},
-	writingPlugins: [
-		"nl-syntax-highlighting",
-		"obsidian-textgenerator-plugin",
-		"commentator",
-		"obsidian-languagetool-plugin",
-		"better-word-count",
-		"obsidian-footnotes",
-		// INFO not longform plugin, as its pane position is otherwise not
-		// saved correctly, and since it needs to be loaded to apply the
-		// `longform-leaf` class, which in turn is needed to determine which
-		// notes are longform notes
-	],
-};
+			leafToOpen: string;
+			widthPx: number;
+			flexGrowHeight: number[];
+		};
+	};
+	writingPlugins: string[];
+}
+
+// CONFIG
+const SETTINGS_PATH = "Meta/personal-plugin-settings.yml";
+
+//──────────────────────────────────────────────────────────────────────────────
 
 export default class PseudometaPersonalPlugin extends Plugin {
 	statusbar?: HTMLElement;
 	lazyloadDone = false;
-	config?: typeof CONFIG;
+	config?: PseudometaPersonalPluginSettings;
 
 	override async onload() {
 		console.info(this.manifest.name + " Plugin loaded.");
 
-		// this.config = await this.app.vault.adapter.read("/settings.yml");
-		this.config = CONFIG;
-		// console.log("👽 this.config:", this.config);
+		try {
+			this.config = parseYaml(await this.app.vault.adapter.read(SETTINGS_PATH));
+		} catch (_error) {
+			new Notice(`Could not load settings at ${SETTINGS_PATH}.`);
+			return;
+		}
 
 		// statusbar initialization
 		this.statusbar = this.addStatusBarItem();
