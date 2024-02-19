@@ -1,14 +1,8 @@
-.PHONY: build init format release
-
-# build & open dev-vault (if on macOS)
-build:
-	VAULT_NAME="Development" ; \
-	node esbuild.config.mjs && \
-	if [[ "$$OSTYPE" =~ darwin* ]] ; then open "obsidian://open?vault=$$VAULT_NAME" ; fi
+.PHONY: init format release build-to-regular-vault
 
 # assumes `$VAULT_PATH` is set, e.g. in `.zshenv`
 # and that the advanced URI plugin is installed
-transfer-to-regular-vault:
+build-to-regular-vault:
 	vault_name="$$(basename "$$VAULT_PATH")" && \
 	plugin_path="$$VAULT_PATH/.obsidian/plugins/my-personal-plugin" && \
 	node esbuild.config.mjs &>/dev/null && \
@@ -21,7 +15,7 @@ format:
 	npx markdownlint-cli --fix --ignore="node_modules" "$$(git rev-parse --show-toplevel)"
 
 check:
-	zsh ./.githooks/pre-commit --no-decoration
+	zsh ./.githooks/pre-commit
 
 # install dependencies, build, enable git hooks
 init:
