@@ -21,7 +21,7 @@ format:
 	npx markdownlint-cli --fix --ignore="node_modules" "$$(git rev-parse --show-toplevel)"
 
 check:
-	zsh ./.githooks/pre-commit
+	zsh ./.githooks/pre-commit --no-decoration
 
 # install dependencies, build, enable git hooks
 init:
