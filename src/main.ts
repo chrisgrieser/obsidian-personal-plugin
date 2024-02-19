@@ -29,13 +29,14 @@ const SETTINGS_PATH = "Meta/personal-plugin-settings.yml";
 //──────────────────────────────────────────────────────────────────────────────
 
 export default class PseudometaPersonalPlugin extends Plugin {
-	statusbar?: HTMLElement;
+	statusbar = this.addStatusBarItem();
 	lazyloadDone = false;
 	config?: PluginSettings;
 
 	override async onload() {
 		console.info(this.manifest.name + " Plugin loaded.");
 
+		// load settings from yaml
 		try {
 			this.config = parseYaml(await this.app.vault.adapter.read(SETTINGS_PATH));
 		} catch (_error) {
@@ -43,9 +44,10 @@ export default class PseudometaPersonalPlugin extends Plugin {
 			return;
 		}
 
-		// statusbar initialization
-		this.statusbar = this.addStatusBarItem();
+		// statusbar: initialize & update on config change
 		this.showSpellcheckIndicator();
+		// @ts-ignore: undocumented event
+		this.registerEvent(this.app.vault.on("config-changed", () => this.showSpellcheckIndicator()));
 
 		// longform or writing actions
 		this.registerEvent(
@@ -90,7 +92,6 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		if ((isWritingOrLongform && !spellcheckOn) || (!isWritingOrLongform && spellcheckOn)) {
 			this.app.commands.executeCommandById("editor:toggle-spellcheck");
 		}
-		this.showSpellcheckIndicator();
 	}
 
 	// open longform sidebars if longform, otherwise open outgoing links
