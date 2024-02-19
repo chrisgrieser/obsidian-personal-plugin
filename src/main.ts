@@ -7,7 +7,7 @@ import {
 	parseYaml,
 } from "obsidian";
 
-interface PseudometaPersonalPluginSettings {
+interface PluginSettings {
 	rightSidebar?: {
 		isLongform: {
 			leafToOpen?: string;
@@ -31,7 +31,7 @@ const SETTINGS_PATH = "Meta/personal-plugin-settings.yml";
 export default class PseudometaPersonalPlugin extends Plugin {
 	statusbar?: HTMLElement;
 	lazyloadDone = false;
-	config?: PseudometaPersonalPluginSettings;
+	config?: PluginSettings;
 
 	override async onload() {
 		console.info(this.manifest.name + " Plugin loaded.");
@@ -63,8 +63,8 @@ export default class PseudometaPersonalPlugin extends Plugin {
 	//───────────────────────────────────────────────────────────────────────────
 
 	// display ✓ if spellcheck is ON, nothing if OFF
-	showSpellcheckIndicator(show?: boolean) {
-		if (!show) show = this.app.vault.getConfig("spellcheck") as boolean;
+	showSpellcheckIndicator() {
+		const show = this.app.vault.getConfig("spellcheck") as boolean;
 		this.statusbar?.setText(show ? "✓" : "");
 	}
 
@@ -85,15 +85,12 @@ export default class PseudometaPersonalPlugin extends Plugin {
 	}
 
 	// spellcheck ON if longform/writing, OFF otherwise
-	toggleSpellcheck(isWritingOrLongformNote: boolean) {
+	toggleSpellcheck(isWritingOrLongform: boolean) {
 		const spellcheckOn = this.app.vault.getConfig("spellcheck");
-		if (isWritingOrLongformNote && !spellcheckOn) {
+		if ((isWritingOrLongform && !spellcheckOn) || (!isWritingOrLongform && spellcheckOn)) {
 			this.app.commands.executeCommandById("editor:toggle-spellcheck");
-			this.showSpellcheckIndicator(true);
-		} else if (!isWritingOrLongformNote && spellcheckOn) {
-			this.app.commands.executeCommandById("editor:toggle-spellcheck");
-			this.showSpellcheckIndicator(false);
 		}
+		this.showSpellcheckIndicator();
 	}
 
 	// open longform sidebars if longform, otherwise open outgoing links
