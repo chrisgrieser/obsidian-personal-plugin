@@ -16,4 +16,4 @@ can reference code snippets from it.
   Syntax Highlighting).
 - When in [longform](https://obsidian.md/plugins?id=longform)
   note, open the longform sidebar pane. Otherwise, open the
-  outgoing-links-sidebar.
+  outgoing-links-sidebar. Also sets specific sizes for the panes.

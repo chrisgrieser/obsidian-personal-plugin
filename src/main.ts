@@ -1,11 +1,41 @@
-import { MarkdownView, Notice, Plugin, WorkspaceLeaf } from "obsidian";
+import { MarkdownView, Notice, Plugin, WorkspaceLeaf, WorkspaceSidedock } from "obsidian";
+
+const CONFIG = {
+	rightSidebar: {
+		isLongform: {
+			leafToOpen: "explorerView", // = longform pane
+			widthPx: 280,
+			heightFactor: [99, 20],
+		},
+		notLongform: {
+			leafToOpen: "outgoingLink",
+			widthPx: 250,
+			heightFactor: [8, 20],
+		},
+	},
+	writingPlugins: [
+		"nl-syntax-highlighting",
+		"obsidian-textgenerator-plugin",
+		"commentator",
+		"obsidian-languagetool-plugin",
+		"better-word-count",
+		"obsidian-footnotes",
+		// INFO not longform plugin, as its pane position is otherwise not
+		// saved correctly, and since it needs to be loaded to apply the
+		// `longform-leaf` class, which in turn is needed to determine which
+		// notes are longform notes
+	],
+};
 
 export default class PseudometaPersonalPlugin extends Plugin {
 	statusbar?: HTMLElement;
 	lazyloadDone = false;
+	config?: typeof CONFIG;
 
 	override onload() {
 		console.info(this.manifest.name + " Plugin loaded.");
+
+		this.config = CONFIG;
 
 		// statusbar initialization
 		this.statusbar = this.addStatusBarItem();
@@ -16,8 +46,8 @@ export default class PseudometaPersonalPlugin extends Plugin {
 			this.app.workspace.on("file-open", () => this.switchWhenWritingOrLongformNote()),
 		);
 		// delay due to longform plugin loading slowly, thus making the check
-		// whether the not is a longform note delay
-		setTimeout(() => this.switchWhenWritingOrLongformNote(), 2000);
+		// whether the note is a longform note failing if loading too early
+		setTimeout(() => this.switchWhenWritingOrLongformNote(), 2500);
 	}
 
 	override onunload() {
@@ -63,38 +93,45 @@ export default class PseudometaPersonalPlugin extends Plugin {
 	// open longform sidebars if longform, otherwise open outgoing links
 	toggleTabsInRightSidebar(isLongform: boolean) {
 		if (this.app.isMobile) return;
+		const conf = this.config?.rightSidebar;
+		if (!conf) return;
 
 		// determine leaves in right sidebar
-		const rightSplit = this.app.workspace.rightSplit;
+		const rightSplit = this.app.workspace.rightSplit as WorkspaceSidedock;
 		const rightRoot = rightSplit.getRoot();
 		const rightSideLeaves: WorkspaceLeaf[] = [];
 		this.app.workspace.iterateAllLeaves((l) => {
 			if (l.getRoot() === rightRoot) rightSideLeaves.push(l);
 		});
 
-		// open leaf and set size
-		const leafToOpen = isLongform ? "explorerView" : "outgoingLink";
+		// open leaf
+		const leafToOpen = conf[isLongform ? "isLongform" : "notLongform"].leafToOpen;
 		const theLeaf = rightSideLeaves.find((l) => Object.keys(l.view).includes(leafToOpen));
-		if (theLeaf) this.app.workspace.revealLeaf(theLeaf);
-		else new Notice(`Could not find sidebar pane for "${leafToOpen}".`);
+		if (!theLeaf) {
+			new Notice(`Could not find sidebar pane for "${leafToOpen}".`);
+			return;
+		}
+		this.app.workspace.revealLeaf(theLeaf);
+
+		// set size
+		const widthPx = conf[isLongform ? "isLongform" : "notLongform"].widthPx;
+		const heightFactor = conf[isLongform ? "isLongform" : "notLongform"].heightFactor;
+
+		rightSplit.setSize(widthPx);
+		const tabGroup = theLeaf.parent as WorkspaceLeaf;
+		tabGroup.setDimension(heightFactor[0] || 50);
+
+		// HACK `setDimension` does not appear to be fully reliable, but when
+		// setting the other tab group's height, it seems to work better…
+		const otherTabGroup = rightSplit.children.find((l) => l.id !== tabGroup.id);
+		otherTabGroup?.setDimension(heightFactor[1] || 50);
 	}
 
 	// lazy-load writing plugins, since they are only rarely used and also slow to load
 	lazyloadWritingPlugins(isWritingOrLongformNote: boolean) {
 		if (this.lazyloadDone || !isWritingOrLongformNote) return;
-
-		// CONFIG
-		const writingPlugins = [
-			"nl-syntax-highlighting",
-			"obsidian-textgenerator-plugin",
-			"commentator",
-			"obsidian-languagetool-plugin",
-			"obsidian-footnotes",
-			// INFO not longform plugin, as its pane position is otherwise not
-			// saved correctly, and since it needs to be loaded to apply the
-			// `longform-leaf` class, which in turn is needed to determine which
-			// notes are longform notes
-		];
+		const writingPlugins = this.config?.writingPlugins;
+		if (!writingPlugins) return;
 
 		for (const pluginId of writingPlugins) {
 			this.app.plugins.enablePlugin(pluginId);

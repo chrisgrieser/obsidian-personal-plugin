@@ -29,7 +29,7 @@
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true
 	},
-	"include": ["src/**/*.ts"],
+	"include": ["src/**/*.ts", "src/main.js"],
 
 	"$schema": "https://json.schemastore.org/tsconfig",
 }
