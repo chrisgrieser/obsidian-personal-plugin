@@ -5,10 +5,10 @@
 build-to-regular-vault:
 	vault_name="$$(basename "$$VAULT_PATH")" && \
 	plugin_path="$$VAULT_PATH/.obsidian/plugins/my-personal-plugin" && \
-	node esbuild.config.mjs &>/dev/null && \
-	cp -f "main.js" "$$plugin_path" && cp -f "manifest.json" "$$plugin_path" && \
-	echo "Plugin transferred to regular vault." && \
-	if [[ "$$OSTYPE" =~ darwin* ]] ; then open "obsidian://advanced-uri?vault=$$vault_name&commandid=app%253Areload" ; fi
+	node esbuild.config.mjs && \
+	cp -f main.js manifest.json "$$plugin_path" && \
+	open "obsidian://open?vault=$$vault_name" && \
+	open "obsidian://advanced-uri?vault=$$vault_name&commandid=app%253Areload"
 
 format:
 	npx biome format --write "$$(git rev-parse --show-toplevel)"
