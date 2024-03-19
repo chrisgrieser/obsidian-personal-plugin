@@ -53,9 +53,16 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on("file-open", () => this.switchWhenWritingOrLongformNote()),
 		);
+		// `resize` event as it is triggered when the right sidebar is toggled
+		this.registerEvent(
+			this.app.workspace.on("resize", () => this.switchWhenWritingOrLongformNote()),
+		);
+
 		// delay due to longform plugin loading slowly, thus making the check
 		// whether the note is a longform note failing if loading too early
-		setTimeout(() => this.switchWhenWritingOrLongformNote(), 2500);
+		this.app.workspace.onLayoutReady(() =>
+			setTimeout(() => this.switchWhenWritingOrLongformNote(), 2000),
+		);
 	}
 
 	override onunload() {
@@ -102,6 +109,9 @@ export default class PseudometaPersonalPlugin extends Plugin {
 			new Notice("'rightSidebar' not configured.");
 			return;
 		}
+
+		// GUARD not when right sidebar is hidden
+		if (this.app.workspace.rightSplit.collapsed) return;
 
 		// determine leaves in right sidebar
 		const rightSplit = this.app.workspace.rightSplit as WorkspaceSidedock;
