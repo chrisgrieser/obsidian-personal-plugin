@@ -3,8 +3,8 @@
 # assumes `$VAULT_PATH` is set, e.g. in `.zshenv`
 # and that the advanced URI plugin is installed
 build-to-regular-vault:
-	vault_name="$$(basename "$$VAULT_PATH")" && \
-	plugin_path="$$VAULT_PATH/.obsidian/plugins/my-personal-plugin" && \
+	vault_name="main-vault" && \
+	plugin_path="$$HOME/main-vault/.obsidian/plugins/my-personal-plugin" && \
 	node esbuild.config.mjs && \
 	cp -f main.js manifest.json "$$plugin_path" && \
 	open "obsidian://open?vault=$$vault_name" && \
