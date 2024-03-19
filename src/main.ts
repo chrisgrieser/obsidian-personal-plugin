@@ -71,7 +71,7 @@ export default class PseudometaPersonalPlugin extends Plugin {
 
 	//───────────────────────────────────────────────────────────────────────────
 
-	// display ✓ if spellcheck is ON, nothing if OFF
+	// display "✓" icon if spellcheck is ON, and nothing if OFF
 	showSpellcheckIndicator() {
 		const show = this.app.vault.getConfig("spellcheck") as boolean;
 		this.statusbar?.setText(show ? "✓" : "");
@@ -106,7 +106,7 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		if (this.app.isMobile) return;
 		const conf = this.config?.rightSidebar;
 		if (!conf) {
-			new Notice("'rightSidebar' not configured.");
+			new Notice('"rightSidebar" not configured in plugin settings.');
 			return;
 		}
 
@@ -124,7 +124,7 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		// open leaf
 		const leafToOpen = conf[isLongform ? "isLongform" : "notLongform"].leafToOpen;
 		if (!leafToOpen) {
-			new Notice("'leafToOpen' not configured.");
+			new Notice('"leafToOpen" not configured in plugin settings.');
 			return;
 		}
 		const theLeaf = rightSideLeaves.find((l) => Object.keys(l.view).includes(leafToOpen));
@@ -137,14 +137,14 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		// set size
 		const widthPx = conf[isLongform ? "isLongform" : "notLongform"].widthPx;
 		if (!widthPx) {
-			new Notice("'widthPx' not configured.");
+			new Notice('"widthPx" not configured in plugin settings.');
 			return;
 		}
 		rightSplit.setSize(widthPx);
 
 		const flexGrowHeight = conf[isLongform ? "isLongform" : "notLongform"].flexGrowHeight;
 		if (!flexGrowHeight) {
-			new Notice("'flexGrowHeight' not configured.");
+			new Notice('"flexGrowHeight" not configured in plugin settings.');
 			return;
 		}
 		for (let i = 0; i < rightSplit.children.length; i++) {
@@ -158,7 +158,7 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		if (this.lazyloadDone || !isWritingOrLongformNote) return;
 		const writingPlugins = this.config?.writingPlugins;
 		if (!writingPlugins) {
-			new Notice("'writingPlugins' not configured.");
+			new Notice('"writingPlugins" not configured in plugin settings.');
 			return;
 		}
 
