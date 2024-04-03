@@ -14,6 +14,12 @@ declare module "obsidian" {
 	interface Vault {
 		getConfig: (key: string) => string | boolean;
 	}
+	interface View {
+		plugin: {
+			// only core plugins
+			id: string;
+		};
+	}
 	interface WorkspaceSidedock {
 		setSize: (size: number) => void;
 		children: WorkspaceLeaf[];

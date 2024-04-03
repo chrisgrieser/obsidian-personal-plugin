@@ -20,7 +20,7 @@ interface PluginSettings {
 			flexGrowHeight?: number[];
 		};
 	};
-	writingPlugins?: string[];
+	writingPluginsToLazyLoad?: string[];
 }
 
 // CONFIG
@@ -128,7 +128,11 @@ export default class PseudometaPersonalPlugin extends Plugin {
 			new Notice('"leafToOpen" not configured in plugin settings.');
 			return;
 		}
-		const theLeaf = rightSideLeaves.find((l) => Object.keys(l.view).includes(leafToOpen));
+		const theLeaf = rightSideLeaves.find((l) => {
+			const communityPluginLeaf = Object.keys(l.view).includes(leafToOpen);
+			const corePluginLeaf = l.view?.plugin?.id === leafToOpen;
+			return communityPluginLeaf || corePluginLeaf;
+		});
 		if (!theLeaf) {
 			new Notice(`Could not find sidebar pane for "${leafToOpen}".`);
 			return;
@@ -157,9 +161,9 @@ export default class PseudometaPersonalPlugin extends Plugin {
 	// lazy-load writing plugins, since they are only rarely used and also slow to load
 	lazyloadWritingPlugins(isWritingOrLongformNote: boolean) {
 		if (this.lazyloadDone || !isWritingOrLongformNote) return;
-		const writingPlugins = this.config?.writingPlugins;
+		const writingPlugins = this.config?.writingPluginsToLazyLoad;
 		if (!writingPlugins) {
-			new Notice('"writingPlugins" not configured in plugin settings.');
+			new Notice('"writingPluginsToLazyLoad" not configured in plugin settings.');
 			return;
 		}
 
