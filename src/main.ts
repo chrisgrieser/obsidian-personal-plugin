@@ -28,6 +28,7 @@ const SETTINGS_PATH = "Meta/personal-plugin-settings.yml";
 
 //──────────────────────────────────────────────────────────────────────────────
 
+// biome-ignore lint/style/noDefaultExport: required for Obsidian plugin
 export default class PseudometaPersonalPlugin extends Plugin {
 	statusbar = this.addStatusBarItem();
 	lazyloadDone = false;
