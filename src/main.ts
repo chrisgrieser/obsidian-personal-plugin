@@ -114,15 +114,16 @@ export default class PseudometaPersonalPlugin extends Plugin {
 
 	// open longform sidebars if longform, otherwise open outgoing links
 	toggleTabsInRightSidebar(isLongform: boolean) {
-		if (this.app.isMobile) return;
-		const conf = this.config?.rightSidebar;
-		if (!conf) {
+		// GUARD not when right sidebar is hidden or on mobile
+		if (this.app.workspace.rightSplit.collapsed || this.app.isMobile) return;
+
+		// determine the correct config
+		const sidebarConf = this.config?.rightSidebar;
+		if (!sidebarConf) {
 			new Notice('"rightSidebar" not configured in plugin settings.');
 			return;
 		}
-
-		// GUARD not when right sidebar is hidden
-		if (this.app.workspace.rightSplit.collapsed) return;
+		const conf = sidebarConf[isLongform ? "isLongform" : "notLongform"];
 
 		// determine leaves in right sidebar
 		const rightSplit = this.app.workspace.rightSplit as WorkspaceSidedock;
@@ -133,7 +134,7 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		});
 
 		// open leaf
-		const leafToOpen = conf[isLongform ? "isLongform" : "notLongform"].leafToOpen;
+		const leafToOpen = conf.leafToOpen;
 		if (!leafToOpen) {
 			new Notice('"leafToOpen" not configured in plugin settings.');
 			return;
@@ -150,14 +151,14 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		this.app.workspace.revealLeaf(theLeaf);
 
 		// set size
-		const widthPx = conf[isLongform ? "isLongform" : "notLongform"].widthPx;
+		const widthPx = conf.widthPx;
 		if (!widthPx) {
 			new Notice('"widthPx" not configured in plugin settings.');
 			return;
 		}
 		rightSplit.setSize(widthPx);
 
-		const flexGrowHeight = conf[isLongform ? "isLongform" : "notLongform"].flexGrowHeight;
+		const flexGrowHeight = conf.flexGrowHeight;
 		if (!flexGrowHeight) {
 			new Notice('"flexGrowHeight" not configured in plugin settings.');
 			return;
