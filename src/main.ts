@@ -21,9 +21,12 @@ interface PluginSettings {
 		};
 	};
 	lazyload?: {
+		notificationDisplaySecs: number; // zero to disable
 		delaySecs: number;
-		delayedPlugins: string[];
-		inWritingNotesPlugins: string[];
+		plugins: {
+			delayed: string[];
+			writing: string[];
+		};
 	};
 }
 
@@ -69,7 +72,7 @@ export default class PseudometaPersonalPlugin extends Plugin {
 			setTimeout(() => this.switchWhenWritingOrLongformNote(), 2000);
 
 			const delaySecs = this.config?.lazyload?.delaySecs ?? 5;
-			setTimeout(() => this.delayedLazyload(), delaySecs * 1000);
+			setTimeout(() => this.loadPlugins("delayed"), delaySecs * 1000);
 		});
 	}
 
@@ -165,32 +168,30 @@ export default class PseudometaPersonalPlugin extends Plugin {
 		}
 	}
 
-	// lazy-load writing plugins, since they are only rarely used and also slow to load
-	lazyloadWritingPlugins(isWritingOrLongformNote: boolean) {
-		if (this.writingLazyloadDone || !isWritingOrLongformNote) return;
-		const writingPlugins = this.config?.lazyload?.inWritingNotesPlugins;
-		if (!writingPlugins) {
-			new Notice('"lazyload.inWritingNotes" not configured in plugin settings.');
+	//───────────────────────────────────────────────────────────────────────────
+
+	loadPlugins(whichList: "writing" | "delayed") {
+		const config = this.config?.lazyload?.plugins;
+		if (!config) return;
+		const pluginList = config[whichList];
+		if (!pluginList) {
+			new Notice(`"lazyload.plugins.${whichList}" not configured in plugin settings.`);
 			return;
 		}
 
-		for (const pluginId of writingPlugins) {
+		for (const pluginId of pluginList) {
 			this.app.plugins.enablePlugin(pluginId);
 		}
-		new Notice("Writing plugins lazy-loaded.", 1000);
-		this.writingLazyloadDone = true;
+
+		const displayDuration = (this.config?.lazyload?.notificationDisplaySecs ?? 2) * 1000;
+		if (displayDuration > 0) {
+			new Notice(`${pluginList.length} ${whichList} plugins lazy-loaded.`, displayDuration);
+		}
 	}
 
-	delayedLazyload() {
-		const delayedPlugins = this.config?.lazyload?.delayedPlugins;
-		if (!delayedPlugins) {
-			new Notice('"lazyload.delayed" not configured in plugin settings.');
-			return;
-		}
-
-		for (const pluginId of delayedPlugins) {
-			this.app.plugins.enablePlugin(pluginId);
-		}
-		new Notice(`${delayedPlugins.length} plugins lazy-loaded.`, 1000);
+	lazyloadWritingPlugins(isWritingOrLongformNote: boolean) {
+		if (this.writingLazyloadDone || !isWritingOrLongformNote) return;
+		this.loadPlugins("writing");
+		this.writingLazyloadDone = true;
 	}
 }

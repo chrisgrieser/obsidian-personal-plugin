@@ -37,9 +37,11 @@ rightSidebar:
     flexGrowHeight: [3.5, 1]
 
 lazyload:
+  notificationDisplaySecs: 1 # zero to disable
   delaySecs: 5
-  delayedPlugins:
-    - obsidian-auto-link-title
-  inWritingNotesPlugins:
-    - obsidian-footnotes
+  plugin:
+	delayed:
+		- obsidian-auto-link-title
+	writing:
+		- obsidian-footnotes
 ```
