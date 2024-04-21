@@ -10,17 +10,21 @@ import {
 interface PluginSettings {
 	rightSidebar?: {
 		isLongform: {
-			leafToOpen?: string;
-			widthPx?: number;
-			flexGrowHeight?: number[];
+			leafToOpen: string;
+			widthPx: number;
+			flexGrowHeight: number[];
 		};
 		notLongform: {
-			leafToOpen?: string;
-			widthPx?: number;
+			leafToOpen: string;
+			widthPx: number;
 			flexGrowHeight?: number[];
 		};
 	};
-	writingPluginsToLazyLoad?: string[];
+	lazyload?: {
+		delaySecs: number;
+		delayedPlugins: string[];
+		inWritingNotesPlugins: string[];
+	};
 }
 
 // CONFIG
@@ -31,7 +35,7 @@ const SETTINGS_PATH = "Meta/personal-plugin-settings.yml";
 // biome-ignore lint/style/noDefaultExport: required for Obsidian plugin
 export default class PseudometaPersonalPlugin extends Plugin {
 	statusbar = this.addStatusBarItem();
-	lazyloadDone = false;
+	writingLazyloadDone = false;
 	config?: PluginSettings;
 
 	override async onload() {
@@ -61,9 +65,12 @@ export default class PseudometaPersonalPlugin extends Plugin {
 
 		// delay due to longform plugin loading slowly, thus making the check
 		// whether the note is a longform note failing if loading too early
-		this.app.workspace.onLayoutReady(() =>
-			setTimeout(() => this.switchWhenWritingOrLongformNote(), 2000),
-		);
+		this.app.workspace.onLayoutReady(() => {
+			setTimeout(() => this.switchWhenWritingOrLongformNote(), 2000);
+
+			const delaySecs = this.config?.lazyload?.delaySecs ?? 5;
+			setTimeout(() => this.delayedLazyload(), delaySecs * 1000);
+		});
 	}
 
 	override onunload() {
@@ -160,10 +167,10 @@ export default class PseudometaPersonalPlugin extends Plugin {
 
 	// lazy-load writing plugins, since they are only rarely used and also slow to load
 	lazyloadWritingPlugins(isWritingOrLongformNote: boolean) {
-		if (this.lazyloadDone || !isWritingOrLongformNote) return;
-		const writingPlugins = this.config?.writingPluginsToLazyLoad;
+		if (this.writingLazyloadDone || !isWritingOrLongformNote) return;
+		const writingPlugins = this.config?.lazyload?.inWritingNotesPlugins;
 		if (!writingPlugins) {
-			new Notice('"writingPluginsToLazyLoad" not configured in plugin settings.');
+			new Notice('"lazyload.inWritingNotes" not configured in plugin settings.');
 			return;
 		}
 
@@ -171,6 +178,19 @@ export default class PseudometaPersonalPlugin extends Plugin {
 			this.app.plugins.enablePlugin(pluginId);
 		}
 		new Notice("Writing plugins lazy-loaded.", 1000);
-		this.lazyloadDone = true;
+		this.writingLazyloadDone = true;
+	}
+
+	delayedLazyload() {
+		const delayedPlugins = this.config?.lazyload?.delayedPlugins;
+		if (!delayedPlugins) {
+			new Notice('"lazyload.delayed" not configured in plugin settings.');
+			return;
+		}
+
+		for (const pluginId of delayedPlugins) {
+			this.app.plugins.enablePlugin(pluginId);
+		}
+		new Notice(`${delayedPlugins.length} plugins lazy-loaded.`, 1000);
 	}
 }

@@ -1,9 +1,9 @@
 {
 	"id": "pseudometa-personal-plugin",
 	"name": "pseudometa personal plugin",
-	"description": "Personal Obsidian plugin, containing features customized to my workflow.",
-	"version": "0.1.0",
-	"minAppVersion": "1.0",
+	"description": "Small utilities for writing plugins, sidebar, spellcheck and lazy-loading of plugins.",
+	"version": "1.0.0",
+	"minAppVersion": "1.5",
 	"isDesktopOnly": false,
 	"author": "pseudometa",
 	"fundingUrl": "https://ko-fi.com/pseudometa",
